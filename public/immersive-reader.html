@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Immersive Reader - Arth Labs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --reading-font-size: 18px;
+            --reading-line-height: 1.8;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .reading-content {
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: var(--reading-font-size);
+            line-height: var(--reading-line-height);
+        }
+
+        /* Personalized content highlighting */
+        .personalized {
+            background: linear-gradient(120deg, rgba(147, 51, 234, 0.15) 0%, rgba(236, 72, 153, 0.15) 100%);
+            border-left: 3px solid #9333ea;
+            padding: 0.5rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 0.5rem 0.5rem 0;
+            position: relative;
+        }
+
+        .personalized::before {
+            content: 'Personalized for you';
+            position: absolute;
+            top: -0.75rem;
+            left: 0.5rem;
+            font-size: 0.7rem;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(120deg, #9333ea, #ec4899);
+            color: white;
+            padding: 0.15rem 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
+        }
+
+        /* Key terms highlighting */
+        .key-term {
+            background: rgba(59, 130, 246, 0.2);
+            border-bottom: 2px solid #3b82f6;
+            padding: 0.1rem 0.25rem;
+            border-radius: 0.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .key-term:hover {
+            background: rgba(59, 130, 246, 0.35);
+        }
+
+        /* Memory aid styling */
+        .memory-aid {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 1px solid #f59e0b;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+
+        .memory-aid-icon {
+            position: absolute;
+            top: -0.75rem;
+            left: 1rem;
+            background: #f59e0b;
+            color: white;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        /* Quiz card styling */
+        .quiz-card {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border: 2px solid #22c55e;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .quiz-option {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .quiz-option:hover {
+            border-color: #22c55e;
+            background: #f0fdf4;
+        }
+
+        .quiz-option.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .quiz-option.correct {
+            border-color: #22c55e;
+            background: #dcfce7;
+        }
+
+        .quiz-option.incorrect {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        /* Focus mode */
+        .focus-mode .content-wrapper {
+            max-width: 42rem;
+        }
+
+        .focus-mode .sidebar {
+            display: none;
+        }
+
+        /* Dark theme */
+        .dark-theme {
+            background-color: #1a1a2e;
+            color: #e5e5e5;
+        }
+
+        .dark-theme .reading-content {
+            color: #e5e5e5;
+        }
+
+        .dark-theme .control-panel {
+            background: #16213e;
+            border-color: #374151;
+        }
+
+        .dark-theme .quiz-card {
+            background: linear-gradient(135deg, #1a2e1a, #1a3a1a);
+            border-color: #166534;
+        }
+
+        .dark-theme .quiz-option {
+            background: #1f2937;
+            border-color: #374151;
+            color: #e5e5e5;
+        }
+
+        .dark-theme .memory-aid {
+            background: linear-gradient(135deg, #2d2a1a, #3d3520);
+            border-color: #b45309;
+        }
+
+        .dark-theme .personalized {
+            background: linear-gradient(120deg, rgba(147, 51, 234, 0.25) 0%, rgba(236, 72, 153, 0.25) 100%);
+        }
+
+        /* Sepia theme */
+        .sepia-theme {
+            background-color: #f4ecd8;
+            color: #5c4b37;
+        }
+
+        .sepia-theme .reading-content {
+            color: #5c4b37;
+        }
+
+        .sepia-theme .control-panel {
+            background: #ebe3d1;
+            border-color: #d4c5a9;
+        }
+
+        /* Illustration placeholder */
+        .illustration {
+            background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+            border: 2px dashed #6366f1;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            text-align: center;
+            color: #4f46e5;
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #9333ea, #ec4899);
+            transition: width 0.3s ease;
+            z-index: 100;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background: #1f2937;
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            max-width: 300px;
+            z-index: 50;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Reading controls */
+        .control-btn {
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-btn:hover {
+            background: rgba(147, 51, 234, 0.1);
+        }
+
+        .control-btn.active {
+            background: rgba(147, 51, 234, 0.2);
+            color: #9333ea;
+        }
+
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Text-to-speech highlight */
+        .tts-highlight {
+            background: rgba(147, 51, 234, 0.3);
+            border-radius: 0.25rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <!-- Logo & Back -->
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        <span class="font-medium">Back</span>
+                    </a>
+                    <div class="h-6 w-px bg-gray-300"></div>
+                    <h1 class="font-semibold text-gray-900">Immersive Reader</h1>
+                </div>
+
+                <!-- Reading Controls -->
+                <div class="flex items-center gap-2">
+                    <!-- Font Size -->
+                    <div class="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                        <button onclick="changeFontSize(-2)" class="control-btn" title="Decrease font size">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                            </svg>
+                        </button>
+                        <span class="px-2 text-sm font-medium text-gray-600" id="fontSizeDisplay">18px</span>
+                        <button onclick="changeFontSize(2)" class="control-btn" title="Increase font size">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Theme Toggle -->
+                    <div class="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                        <button onclick="setTheme('light')" class="control-btn active" id="lightThemeBtn" title="Light theme">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                        </button>
+                        <button onclick="setTheme('sepia')" class="control-btn" id="sepiaThemeBtn" title="Sepia theme">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                            </svg>
+                        </button>
+                        <button onclick="setTheme('dark')" class="control-btn" id="darkThemeBtn" title="Dark theme">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Focus Mode -->
+                    <button onclick="toggleFocusMode()" class="control-btn bg-gray-100 rounded-lg" id="focusModeBtn" title="Focus mode">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                        </svg>
+                    </button>
+
+                    <!-- Text-to-Speech -->
+                    <button onclick="toggleTTS()" class="control-btn bg-gray-100 rounded-lg" id="ttsBtn" title="Read aloud">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8" id="mainContent">
+        <div class="flex gap-8">
+            <!-- Sidebar - Table of Contents -->
+            <aside class="sidebar hidden lg:block w-64 flex-shrink-0">
+                <div class="sticky top-24 bg-white rounded-xl border border-gray-200 p-4">
+                    <h3 class="font-semibold text-gray-900 mb-4">Contents</h3>
+                    <nav class="space-y-2 text-sm">
+                        <a href="#section-intro" class="block text-purple-600 font-medium">Introduction</a>
+                        <a href="#section-photosynthesis" class="block text-gray-600 hover:text-purple-600 transition">What is Photosynthesis?</a>
+                        <a href="#section-process" class="block text-gray-600 hover:text-purple-600 transition">The Process</a>
+                        <a href="#section-importance" class="block text-gray-600 hover:text-purple-600 transition">Why It Matters</a>
+                        <a href="#section-quiz" class="block text-gray-600 hover:text-purple-600 transition">Check Understanding</a>
+                    </nav>
+
+                    <div class="mt-6 pt-4 border-t border-gray-200">
+                        <h4 class="font-medium text-gray-900 mb-2 text-sm">Your Progress</h4>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-purple-600 to-pink-500 h-2 rounded-full" style="width: 0%" id="sidebarProgress"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1"><span id="progressPercent">0</span>% complete</p>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-purple-50 rounded-lg">
+                        <p class="text-xs text-purple-700 font-medium">Reading Level</p>
+                        <p class="text-sm text-purple-900">Grade 8</p>
+                        <button onclick="showLevelModal()" class="text-xs text-purple-600 hover:underline mt-1">Change level</button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Content Area -->
+            <article class="content-wrapper flex-1 max-w-3xl">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 lg:p-12 reading-content">
+                    <!-- Title -->
+                    <header class="mb-8">
+                        <span class="text-sm font-medium text-purple-600 uppercase tracking-wide">Chapter 5 - Biology</span>
+                        <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 mt-2 mb-4" style="font-family: 'Inter', sans-serif;">
+                            Understanding Photosynthesis
+                        </h1>
+                        <p class="text-gray-500 text-base" style="font-family: 'Inter', sans-serif;">
+                            Estimated reading time: 8 minutes
+                        </p>
+                    </header>
+
+                    <!-- Introduction Section -->
+                    <section id="section-intro" class="mb-8">
+                        <p class="mb-4">
+                            Have you ever wondered how plants create their own food? Unlike animals that must find and eat food, plants have an amazing superpower: they can make their own food using just sunlight, water, and air. This incredible process is called <span class="key-term" data-definition="The process by which green plants use sunlight to synthesize foods from carbon dioxide and water, generating oxygen as a byproduct.">photosynthesis</span>.
+                        </p>
+
+                        <!-- Personalized Example -->
+                        <div class="personalized">
+                            <p>
+                                Think of it like your favorite video game where your character needs to collect resources to build things. Plants collect sunlight, water, and carbon dioxide as their "resources" and use them to craft glucose (sugar) - their food and building material!
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- What is Photosynthesis Section -->
+                    <section id="section-photosynthesis" class="mb-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-4" style="font-family: 'Inter', sans-serif;">
+                            What is Photosynthesis?
+                        </h2>
+
+                        <p class="mb-4">
+                            Photosynthesis comes from two Greek words: "photo" meaning light, and "synthesis" meaning putting together. So photosynthesis literally means "putting together with light."
+                        </p>
+
+                        <p class="mb-4">
+                            During photosynthesis, plants capture energy from sunlight using special molecules called <span class="key-term" data-definition="A green pigment found in plants that absorbs light energy for photosynthesis. It gives plants their green color.">chlorophyll</span>. This is what gives plants their green color! The chlorophyll is stored in tiny structures inside plant cells called <span class="key-term" data-definition="Organelles found in plant cells that conduct photosynthesis. They contain chlorophyll and are the site where light energy is converted to chemical energy.">chloroplasts</span>.
+                        </p>
+
+                        <!-- Illustration -->
+                        <div class="illustration">
+                            <svg class="w-16 h-16 mx-auto mb-2 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <p class="font-medium">Interactive Diagram: Inside a Chloroplast</p>
+                            <p class="text-sm opacity-75">AI-generated illustration showing the structure of a chloroplast</p>
+                        </div>
+
+                        <!-- Memory Aid -->
+                        <div class="memory-aid">
+                            <div class="memory-aid-icon">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                </svg>
+                            </div>
+                            <p class="font-semibold text-amber-800 mt-2 mb-1" style="font-family: 'Inter', sans-serif;">Memory Helper</p>
+                            <p class="text-amber-900">
+                                <strong>Chloro-</strong> sounds like "color" - and chlorophyll is what gives plants their <strong>color</strong> (green)!
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- The Process Section -->
+                    <section id="section-process" class="mb-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-4" style="font-family: 'Inter', sans-serif;">
+                            The Process Step by Step
+                        </h2>
+
+                        <p class="mb-4">
+                            Photosynthesis can be broken down into a simple equation:
+                        </p>
+
+                        <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6 my-6 text-center">
+                            <p class="text-lg font-mono">
+                                <span class="text-blue-600">6CO₂</span> + <span class="text-cyan-600">6H₂O</span> + <span class="text-yellow-600">Light Energy</span> → <span class="text-green-600">C₆H₁₂O₆</span> + <span class="text-purple-600">6O₂</span>
+                            </p>
+                            <p class="text-sm text-gray-600 mt-3" style="font-family: 'Inter', sans-serif;">
+                                Carbon Dioxide + Water + Light → Glucose + Oxygen
+                            </p>
+                        </div>
+
+                        <p class="mb-4">Here's what happens in each step:</p>
+
+                        <ol class="list-decimal list-inside space-y-3 mb-6">
+                            <li><strong>Light Absorption:</strong> Chlorophyll in the leaves captures sunlight energy.</li>
+                            <li><strong>Water Splitting:</strong> The plant uses this energy to split water molecules (H₂O) into hydrogen and oxygen.</li>
+                            <li><strong>Carbon Fixation:</strong> The hydrogen combines with carbon dioxide (CO₂) from the air to make glucose (sugar).</li>
+                            <li><strong>Oxygen Release:</strong> The leftover oxygen is released into the air - which is what we breathe!</li>
+                        </ol>
+
+                        <!-- Personalized Example -->
+                        <div class="personalized">
+                            <p>
+                                It's like a recipe in a cooking game! You need specific ingredients (water, CO₂, sunlight), you follow the recipe (chemical reactions in chloroplasts), and you get your final dish (glucose) plus some bonus items (oxygen)!
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Importance Section -->
+                    <section id="section-importance" class="mb-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-4" style="font-family: 'Inter', sans-serif;">
+                            Why Photosynthesis Matters
+                        </h2>
+
+                        <p class="mb-4">
+                            Photosynthesis is absolutely essential for life on Earth. Here's why:
+                        </p>
+
+                        <ul class="space-y-3 mb-6">
+                            <li class="flex items-start gap-3">
+                                <span class="flex-shrink-0 w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm">1</span>
+                                <span><strong>Oxygen Production:</strong> Almost all the oxygen we breathe comes from photosynthesis by plants, algae, and cyanobacteria.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="flex-shrink-0 w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm">2</span>
+                                <span><strong>Food Source:</strong> Plants form the base of almost every food chain on Earth.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="flex-shrink-0 w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm">3</span>
+                                <span><strong>Carbon Dioxide Removal:</strong> Plants absorb CO₂, helping regulate Earth's climate.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="flex-shrink-0 w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm">4</span>
+                                <span><strong>Energy Storage:</strong> The glucose plants make stores energy from the sun in chemical form.</span>
+                            </li>
+                        </ul>
+
+                        <!-- Memory Aid -->
+                        <div class="memory-aid">
+                            <div class="memory-aid-icon">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                </svg>
+                            </div>
+                            <p class="font-semibold text-amber-800 mt-2 mb-1" style="font-family: 'Inter', sans-serif;">Remember This!</p>
+                            <p class="text-amber-900">
+                                "<strong>P</strong>lants <strong>O</strong>ffer <strong>F</strong>ood <strong>C</strong>onstantly" - POFC reminds us of the 4 reasons photosynthesis matters: <strong>P</strong>roduces oxygen, <strong>O</strong>ffers food base, <strong>F</strong>ixes carbon, <strong>C</strong>aptures energy!
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Embedded Quiz -->
+                    <section id="section-quiz" class="mb-8">
+                        <div class="quiz-card">
+                            <div class="flex items-center gap-2 mb-4">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <h3 class="font-bold text-green-800 text-lg" style="font-family: 'Inter', sans-serif;">Check Your Understanding</h3>
+                            </div>
+
+                            <p class="text-gray-700 mb-4" style="font-family: 'Inter', sans-serif;">
+                                What gives plants their green color?
+                            </p>
+
+                            <div id="quizOptions">
+                                <div class="quiz-option" onclick="selectOption(this, 'A', false)">
+                                    <span class="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center text-sm font-medium">A</span>
+                                    <span>Glucose</span>
+                                </div>
+                                <div class="quiz-option" onclick="selectOption(this, 'B', true)">
+                                    <span class="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center text-sm font-medium">B</span>
+                                    <span>Chlorophyll</span>
+                                </div>
+                                <div class="quiz-option" onclick="selectOption(this, 'C', false)">
+                                    <span class="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center text-sm font-medium">C</span>
+                                    <span>Oxygen</span>
+                                </div>
+                                <div class="quiz-option" onclick="selectOption(this, 'D', false)">
+                                    <span class="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center text-sm font-medium">D</span>
+                                    <span>Carbon Dioxide</span>
+                                </div>
+                            </div>
+
+                            <div id="quizFeedback" class="mt-4 p-4 rounded-lg hidden">
+                                <!-- Feedback appears here -->
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Continue Reading -->
+                    <div class="border-t border-gray-200 pt-8 mt-8">
+                        <p class="text-gray-500 text-sm mb-4" style="font-family: 'Inter', sans-serif;">Continue Learning</p>
+                        <a href="#" class="block p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl hover:from-purple-100 hover:to-pink-100 transition group">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-semibold text-gray-900" style="font-family: 'Inter', sans-serif;">Next: Cellular Respiration</h4>
+                                    <p class="text-sm text-gray-600">Learn how cells use glucose to release energy</p>
+                                </div>
+                                <svg class="w-6 h-6 text-purple-600 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <!-- Tooltip Element -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <!-- Reading Level Modal -->
+    <div class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center" id="levelModal">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Adjust Reading Level</h3>
+            <p class="text-gray-600 mb-4">Select your preferred reading level. The content will be adapted to match.</p>
+
+            <div class="space-y-2">
+                <button onclick="setLevel('elementary')" class="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-purple-400 hover:bg-purple-50 transition">
+                    <span class="font-medium">Elementary</span>
+                    <span class="text-sm text-gray-500 block">Grades 3-5</span>
+                </button>
+                <button onclick="setLevel('middle')" class="w-full text-left p-3 rounded-lg border-2 border-purple-500 bg-purple-50">
+                    <span class="font-medium">Middle School</span>
+                    <span class="text-sm text-gray-500 block">Grades 6-8 (Current)</span>
+                </button>
+                <button onclick="setLevel('high')" class="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-purple-400 hover:bg-purple-50 transition">
+                    <span class="font-medium">High School</span>
+                    <span class="text-sm text-gray-500 block">Grades 9-12</span>
+                </button>
+                <button onclick="setLevel('college')" class="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-purple-400 hover:bg-purple-50 transition">
+                    <span class="font-medium">College</span>
+                    <span class="text-sm text-gray-500 block">Undergraduate level</span>
+                </button>
+            </div>
+
+            <button onclick="closeLevelModal()" class="mt-4 w-full py-2 text-gray-600 hover:text-gray-900 transition">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let currentFontSize = 18;
+        let currentTheme = 'light';
+        let focusModeEnabled = false;
+        let ttsEnabled = false;
+        let speechSynthesis = window.speechSynthesis;
+
+        // Font Size Controls
+        function changeFontSize(delta) {
+            currentFontSize = Math.max(14, Math.min(28, currentFontSize + delta));
+            document.documentElement.style.setProperty('--reading-font-size', currentFontSize + 'px');
+            document.getElementById('fontSizeDisplay').textContent = currentFontSize + 'px';
+        }
+
+        // Theme Controls
+        function setTheme(theme) {
+            const body = document.body;
+            body.classList.remove('dark-theme', 'sepia-theme');
+
+            document.querySelectorAll('#lightThemeBtn, #sepiaThemeBtn, #darkThemeBtn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            if (theme === 'dark') {
+                body.classList.add('dark-theme');
+                document.getElementById('darkThemeBtn').classList.add('active');
+            } else if (theme === 'sepia') {
+                body.classList.add('sepia-theme');
+                document.getElementById('sepiaThemeBtn').classList.add('active');
+            } else {
+                document.getElementById('lightThemeBtn').classList.add('active');
+            }
+
+            currentTheme = theme;
+        }
+
+        // Focus Mode
+        function toggleFocusMode() {
+            focusModeEnabled = !focusModeEnabled;
+            document.getElementById('mainContent').classList.toggle('focus-mode', focusModeEnabled);
+            document.getElementById('focusModeBtn').classList.toggle('active', focusModeEnabled);
+        }
+
+        // Text-to-Speech
+        function toggleTTS() {
+            ttsEnabled = !ttsEnabled;
+            document.getElementById('ttsBtn').classList.toggle('active', ttsEnabled);
+
+            if (ttsEnabled) {
+                const text = document.querySelector('.reading-content').innerText;
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.onend = () => {
+                    ttsEnabled = false;
+                    document.getElementById('ttsBtn').classList.remove('active');
+                };
+                speechSynthesis.speak(utterance);
+            } else {
+                speechSynthesis.cancel();
+            }
+        }
+
+        // Key Term Tooltips
+        document.querySelectorAll('.key-term').forEach(term => {
+            term.addEventListener('mouseenter', (e) => {
+                const tooltip = document.getElementById('tooltip');
+                const definition = e.target.dataset.definition;
+                tooltip.textContent = definition;
+
+                const rect = e.target.getBoundingClientRect();
+                tooltip.style.left = rect.left + 'px';
+                tooltip.style.top = (rect.bottom + 10) + 'px';
+                tooltip.classList.add('visible');
+            });
+
+            term.addEventListener('mouseleave', () => {
+                document.getElementById('tooltip').classList.remove('visible');
+            });
+        });
+
+        // Quiz Functionality
+        function selectOption(element, letter, isCorrect) {
+            // Prevent re-answering
+            if (document.querySelector('.quiz-option.correct, .quiz-option.incorrect')) return;
+
+            const feedback = document.getElementById('quizFeedback');
+
+            if (isCorrect) {
+                element.classList.add('correct');
+                feedback.className = 'mt-4 p-4 rounded-lg bg-green-100 text-green-800';
+                feedback.innerHTML = `
+                    <p class="font-semibold flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Correct!
+                    </p>
+                    <p class="mt-1">Chlorophyll is the green pigment that captures light energy for photosynthesis. Great job!</p>
+                `;
+            } else {
+                element.classList.add('incorrect');
+                // Show correct answer
+                document.querySelectorAll('.quiz-option')[1].classList.add('correct');
+                feedback.className = 'mt-4 p-4 rounded-lg bg-amber-100 text-amber-800';
+                feedback.innerHTML = `
+                    <p class="font-semibold flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        Not quite!
+                    </p>
+                    <p class="mt-1">The correct answer is <strong>Chlorophyll</strong>. Remember: chlorophyll is the green pigment in plants that absorbs light energy. Try reviewing the section above!</p>
+                `;
+            }
+            feedback.classList.remove('hidden');
+        }
+
+        // Reading Progress
+        function updateProgress() {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = Math.min(100, (scrollTop / docHeight) * 100);
+
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('sidebarProgress').style.width = progress + '%';
+            document.getElementById('progressPercent').textContent = Math.round(progress);
+        }
+
+        window.addEventListener('scroll', updateProgress);
+        updateProgress();
+
+        // Level Modal
+        function showLevelModal() {
+            document.getElementById('levelModal').classList.remove('hidden');
+            document.getElementById('levelModal').classList.add('flex');
+        }
+
+        function closeLevelModal() {
+            document.getElementById('levelModal').classList.add('hidden');
+            document.getElementById('levelModal').classList.remove('flex');
+        }
+
+        function setLevel(level) {
+            // In a real app, this would trigger content re-generation
+            alert('In the full version, the content would now be adapted to the ' + level + ' reading level using AI.');
+            closeLevelModal();
+        }
+
+        // Close modal on outside click
+        document.getElementById('levelModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('levelModal')) {
+                closeLevelModal();
+            }
+        });
+    </script>
+</body>
+</html>
