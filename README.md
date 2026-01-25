@@ -26,6 +26,35 @@ An advanced educational technology platform combining LearnLM's pedagogical capa
 - Visual illustrations and memory aids
 - Embedded formative assessment questions
 
+> **Try it:** [Immersive Reader Prototype](public/immersive-reader.html) - Mobile-friendly, minimal UI designed for all age groups
+
+### 📱 Immersive Reader - Accessible Learning
+
+A distraction-free reading experience designed for maximum accessibility:
+
+**Mobile-First Design**
+- Fully responsive layout optimized for phones and tablets
+- Touch-friendly controls and navigation
+- Works offline once loaded
+
+**Minimal UI, Maximum Learning**
+- Clean interface with zero learning curve
+- One-tap theme switching (light/sepia/dark)
+- Simple font size controls for any visual need
+- Focus mode removes all distractions
+
+**AI-Enhanced Features**
+- Personalized content highlighted automatically
+- Key terms with tap-to-reveal definitions
+- Memory aids generated for complex concepts
+- Embedded quizzes with instant feedback
+
+**For Every Age Group**
+- Reading level selector (Elementary to College)
+- Text-to-speech for auditory learners
+- High contrast themes for accessibility
+- Progress tracking to build confidence
+
 **Slides & Narration**
 - Auto-generated slide presentations summarizing key concepts
 - Optional AI-generated narration simulating recorded lessons
